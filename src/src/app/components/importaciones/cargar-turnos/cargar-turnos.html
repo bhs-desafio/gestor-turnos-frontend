@@ -1,0 +1,98 @@
+<h2>Importar Turnos</h2>
+
+<form [formGroup]="frmImportar">
+    <div class="mb-3">
+        <label for="idFile" class="form-label">Archivo:</label>
+        <input type="file" class="form-control" id="idFile" formControlName="archivoTurnos" (change)="onArchivoSeleccionado($event)">
+    </div>
+    <div class="mb-3">
+        <button type="button" class="btn btn-primary" (click)="onImportar()" [disabled]="cargando()">Importar</button>&nbsp;&nbsp;
+    </div>
+
+</form>
+
+@if (cargando()) {
+    <div class="alert alert-info">Importando archivo...</div>
+}
+
+@if (error()) {
+    <div class="alert alert-danger">{{ error() }}</div>
+}
+
+@if (resultado(); as res) {
+    <h4>Resumen de la carga</h4>
+    <div class="row mb-3">
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="text-muted small">Id de carga</div>
+                    <div class="small text-break">{{ res.idCarga }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card">
+                <div class="card-body">
+                    <div class="text-muted small">Total de filas</div>
+                    <div class="fs-4">{{ res.totalFilas }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-success">
+                <div class="card-body">
+                    <div class="text-muted small">Filas exitosas</div>
+                    <div class="fs-4 text-success">{{ res.filasExitosas }}</div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-3">
+            <div class="card border-danger">
+                <div class="card-body">
+                    <div class="text-muted small">Filas fallidas</div>
+                    <div class="fs-4 text-danger">{{ res.filasFallidas }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <h4>Detalle por fila</h4>
+    <div class="table-responsive">
+        <table class="table table-striped table-sm">
+            <thead>
+                <tr>
+                    <th>Fila</th>
+                    <th>Email</th>
+                    <th>Hora inicio</th>
+                    <th>Hora fin</th>
+                    <th>Estado</th>
+                    <th>Error</th>
+                    <th>Id turno</th>
+                </tr>
+            </thead>
+            <tbody>
+                @for (detalle of res.detalles; track detalle.fila) {
+                    <tr [class.table-danger]="!detalle.exitoso">
+                        <td>{{ detalle.fila }}</td>
+                        <td>{{ detalle.email ?? '-' }}</td>
+                        <td>{{ (detalle.horaInicio | date:'dd/MM/yyyy HH:mm') ?? '-' }}</td>
+                        <td>{{ (detalle.horaFin | date:'dd/MM/yyyy HH:mm') ?? '-' }}</td>
+                        <td>
+                            @if (detalle.exitoso) {
+                                <span class="badge bg-success">Exitoso</span>
+                            } @else {
+                                <span class="badge bg-danger">Fallido</span>
+                            }
+                        </td>
+                        <td>{{ detalle.error ?? '-' }}</td>
+                        <td class="small">{{ detalle.idTurno ?? '-' }}</td>
+                    </tr>
+                } @empty {
+                    <tr>
+                        <td colspan="7" class="text-center text-muted">No hay filas para mostrar.</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
